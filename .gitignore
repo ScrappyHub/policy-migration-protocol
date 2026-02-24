@@ -3,3 +3,10 @@ scripts/_scratch/
 scripts\_scratch\
 scripts\_patch\
 scripts/_patch/
+
+.env.pmp
+scripts/_patchers/
+.env
+.env.*
+*.log
+.DS_Store
