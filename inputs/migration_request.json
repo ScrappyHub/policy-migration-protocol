@@ -1,0 +1,30 @@
+{
+  "schema": "pmp.migration.request.v1",
+  "migration_key": "policy_overlay_bootstrap_v1",
+  "source_system": "legacy_policy_store",
+  "target_system": "pmp_policy_store",
+  "steps": [
+    {
+      "step_key": "copy_base_policy",
+      "ordinal": 1,
+      "operation": "copy_policy",
+      "target_ref": "policy/base",
+      "dependencies": [],
+      "payload": {
+        "source_ref": "legacy/base",
+        "mode": "replace"
+      }
+    },
+    {
+      "step_key": "attach_overlay_alpha",
+      "ordinal": 2,
+      "operation": "attach_overlay",
+      "target_ref": "policy/base",
+      "dependencies": ["copy_base_policy"],
+      "payload": {
+        "overlay_ref": "overlay/alpha",
+        "priority": 100
+      }
+    }
+  ]
+}
