@@ -9,30 +9,39 @@ function Die([string]$Code,[string]$Detail){
   throw ("PMP_SELFTEST_FAIL:" + $Code + ":" + $Detail)
 }
 
+function Q([string]$s){
+  if($null -eq $s){ return '""' }
+  return '"' + $s.Replace('"','\"') + '"'
+}
+
 function Run-Child([string]$ScriptPath,[string[]]$Argv){
   if(-not (Test-Path -LiteralPath $ScriptPath -PathType Leaf)){
     Die "CHILD_SCRIPT_MISSING" $ScriptPath
   }
 
+  $psExe = (Get-Command powershell.exe -ErrorAction Stop).Source
+
+  $pieces = New-Object System.Collections.Generic.List[string]
+  [void]$pieces.Add('-NoProfile')
+  [void]$pieces.Add('-NonInteractive')
+  [void]$pieces.Add('-ExecutionPolicy')
+  [void]$pieces.Add('Bypass')
+  [void]$pieces.Add('-File')
+  [void]$pieces.Add((Q $ScriptPath))
+
+  foreach($a in $Argv){
+    [void]$pieces.Add((Q $a))
+  }
+
+  $argLine = ($pieces.ToArray() -join ' ')
+
   $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = (Get-Command powershell.exe -ErrorAction Stop).Source
+  $psi.FileName = $psExe
+  $psi.Arguments = $argLine
   $psi.UseShellExecute = $false
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError  = $true
   $psi.CreateNoWindow = $true
-
-  $allArgs = New-Object System.Collections.Generic.List[string]
-  [void]$allArgs.Add("-NoProfile")
-  [void]$allArgs.Add("-NonInteractive")
-  [void]$allArgs.Add("-ExecutionPolicy")
-  [void]$allArgs.Add("Bypass")
-  [void]$allArgs.Add("-File")
-  [void]$allArgs.Add($ScriptPath)
-  foreach($a in $Argv){ [void]$allArgs.Add($a) }
-
-  foreach($a in $allArgs){
-    [void]$psi.ArgumentList.Add($a)
-  }
 
   $p = New-Object System.Diagnostics.Process
   $p.StartInfo = $psi
